@@ -1,0 +1,17 @@
+{
+    "name": "user/gudang",
+    "autoload": {
+        "psr-4": {
+            "User\\Gudang\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Irvanda08",
+            "email": "irvandanugroho08@gmail.com"
+        }
+    ],
+    "require": {
+        "mpdf/mpdf": "^6.1"
+    }
+}
