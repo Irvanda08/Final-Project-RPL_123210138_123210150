@@ -5,7 +5,7 @@ $username	= "root";
 $password	= ""; 
 $database	= "mmm";
 
-$connect	= new mysqli($hostname, $username, $password, $database);
+$connect	= new mysqli($hostname, $username, $password, $database, 4306);
 
 	if($connect->connect_error) { //cek error
 		die("Error : ".$connect->connect_error);

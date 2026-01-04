@@ -3,81 +3,90 @@ require('fpdf.php');
 
 class PDF extends FPDF
 {
-    // Header
     function Header()
     {
-        // Add PT MMM logo
-        $this->Image('foto/mmm.jpeg', 10, 10, 30); // Adjust the image path and position as needed
+        // Logo
+        $this->Image('foto/mmm.jpeg', 10, 10, 25);
 
-        // Move "Data Barang" header to the center
-        $this->SetFont('Arial', 'B', 14);
-        $this->Cell(0, 10, 'Data Barang Masuk', 0, 1, 'C');
-        $this->Ln(10);
+        // Judul
+        $this->SetFont('Arial','B',14);
+        $this->Cell(0,8,'PT MUARA MITRA MANDIRI',0,1,'C');
+
+        $this->SetFont('Arial','',11);
+        $this->Cell(0,6,'LAPORAN DATA BARANG MASUK',0,1,'C');
+
+        $this->SetFont('Arial','I',9);
+        $this->Cell(0,6,'Periode: Seluruh Data',0,1,'C');
+
+        // Garis pemisah
+        $this->Ln(4);
+        $this->SetLineWidth(0.5);
+        $this->Line(10, 45, 200, 45);
+        $this->Ln(8);
     }
 
-    // Footer
-    // Footer
-function Footer()
-{
-    // Warehouse admin name and signature box
-    $this->SetY(-60);
-    $this->SetFont('Arial', '', 12);
-    $this->SetX(-60); // Set X position to align to the right
-    $this->Cell(0, 10, 'Admin Gudang:', 0, 1, 'R');
-    $this->SetX(-60); // Set X position to align to the right
-    $this->Cell(0, 30, 'Nopri', 0, 1, 'R');
-    $this->Cell(60, 10, '', 'T', 0, 'C'); // Signature box
+    function Footer()
+    {
+        // Tanda tangan
+        $this->SetY(-55);
+        $this->SetFont('Arial','',10);
+        $this->Cell(0,6,'Mengetahui,',0,1,'R');
+        $this->Cell(0,6,'Admin Gudang',0,1,'R');
+        $this->Ln(15);
+        $this->Cell(0,6,'Nopri',0,1,'R');
 
-    // Page number
-    $this->SetY(-15);
-    $this->SetFont('Arial', 'I', 8);
-    $this->Cell(0, 10, 'Page '.$this->PageNo().'/{nb}', 0, 0, 'C');
-}
+        // Garis tanda tangan
+        $this->Line(150, $this->GetY(), 190, $this->GetY());
 
+        // Page number
+        $this->SetY(-15);
+        $this->SetFont('Arial','I',8);
+        $this->Cell(0,10,'Halaman '.$this->PageNo().'/{nb}',0,0,'C');
+    }
 
-    // Content
-    // Content
-function Content($result)
-{
-    $this->SetFont('Arial', '', 12);
-    
-    // Add extra line break before the table
-    $this->Ln(40);
-    
-    $this->Cell(20, 10, 'ID', 1, 0, 'C');
-    $this->Cell(30, 10, 'Nama', 1, 0, 'C');
-    $this->Cell(30, 10, 'Jenis', 1, 0, 'C');
-    $this->Cell(25, 10, 'Harga', 1, 0, 'C');
-    $this->Cell(25, 10, 'Ukuran', 1, 0, 'C');
-    $this->Cell(15, 10, 'Stok', 1, 0, 'C');
-    $this->Cell(40, 10, 'Waktu Keluar', 1, 1, 'C');
+    function Content($result)
+    {
+        // Header tabel
+        $this->Ln(20);
 
-    while ($row = mysqli_fetch_assoc($result)) {
-        $this->Cell(20, 10, $row['id_barang'], 1, 0, 'C');
-        $this->Cell(30, 10, $row['nama_barang'], 1, 0, 'C');
-        $this->Cell(30, 10, $row['jenis_barang'], 1, 0, 'C');
-        $this->Cell(25, 10, $row['harga_barang'], 1, 0, 'C');
-        $this->Cell(25, 10, $row['ukuran_barang'], 1, 0, 'C');
-        $this->Cell(15, 10, $row['stok_barang'], 1, 0, 'C');
-        $this->Cell(40, 10, $row['waktu_input'], 1, 1, 'C');
+        $this->SetFont('Arial','B',10);
+        $this->SetFillColor(220,220,220);
+
+        $this->Cell(20,8,'ID',1,0,'C',true);
+        $this->Cell(35,8,'Nama Barang',1,0,'C',true);
+        $this->Cell(30,8,'Jenis',1,0,'C',true);
+        $this->Cell(25,8,'Harga',1,0,'C',true);
+        $this->Cell(20,8,'Ukuran',1,0,'C',true);
+        $this->Cell(15,8,'Stok',1,0,'C',true);
+        $this->Cell(35,8,'Waktu Masuk',1,1,'C',true);
+
+        // Isi tabel
+        $this->SetFont('Arial','',9);
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            $this->Cell(20,8,$row['id_barang'],1,0,'C');
+            $this->Cell(35,8,$row['nama_barang'],1,0);
+            $this->Cell(30,8,$row['jenis_barang'],1,0);
+            $this->Cell(25,8,'Rp '.number_format($row['harga_barang'],0,',','.'),1,0,'R');
+            $this->Cell(20,8,$row['ukuran_barang'],1,0,'C');
+            $this->Cell(15,8,$row['stok_barang'],1,0,'C');
+            $this->Cell(35,8,date('d-m-Y H:i', strtotime($row['waktu_input'])),1,1,'C');
+        }
     }
 }
 
-}
-
-// Membuat objek PDF
+// Init PDF
 $pdf = new PDF();
-
-// Membuat halaman PDF
+$pdf->AliasNbPages();
 $pdf->AddPage();
 
-// Mengambil data dari database
+// Ambil data
 include 'koneksi_admin.php';
-$result = mysqli_query($connect, "SELECT * FROM barang ORDER BY waktu_input DESC") or die(mysqli_error($connect));
+$result = mysqli_query($connect, "SELECT * FROM barang ORDER BY waktu_input DESC");
 
-// Menambahkan konten ke halaman PDF
+// Render konten
 $pdf->Content($result);
 
-// Menampilkan laporan PDF
-$pdf->Output('laporan_barang_keluar.pdf', 'I');
+// Output
+$pdf->Output('laporan_barang_masuk.pdf', 'I');
 ?>
